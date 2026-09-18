@@ -99,7 +99,7 @@ test('no message contains an em dash', () => {
     { domain: 'b.com', kind: 'dropping', label: 'Dropping', priority: 'high', detail: { status: ['pendingDelete'] } },
     { domain: 'c.com', kind: 'threshold', label: '30 days to expiry', watch: 'renewal', detail: { threshold: 30, expires: '2026-10-18', owner: 'fabrik' } },
   ]);
-  assert.ok(!message.includes('—'), 'message contains an em dash');
+  assert.ok(!message.includes('\u2014'), 'message contains an em dash');
 });
 
 test('without a webhook the message is logged and the run still succeeds', async () => {

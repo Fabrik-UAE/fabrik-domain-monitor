@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fabrik domain monitor</title>
+<meta name="description" content="Registration status of the domains Fabrik watches.">
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #16181d;
+  --muted: #646b7a;
+  --line: #e3e6ec;
+  --panel: #f7f8fa;
+  --green: #1a7f4b;
+  --green-bg: #e3f3ea;
+  --amber: #9a6100;
+  --amber-bg: #fdf0d9;
+  --red: #b3261e;
+  --red-bg: #fbe5e3;
+  --grey: #5d6470;
+  --grey-bg: #eceef2;
+  --accent: #2a5bd7;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --fg: #e8eaee;
+    --muted: #9aa2b1;
+    --line: #2a2e36;
+    --panel: #1b1e24;
+    --green: #6cd39a;
+    --green-bg: #173525;
+    --amber: #e8b45c;
+    --amber-bg: #3a2d12;
+    --red: #f0897f;
+    --red-bg: #3d1d1a;
+    --grey: #a5adba;
+    --grey-bg: #262a32;
+    --accent: #8fb0ff;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 1140px; margin: 0 auto; padding: 32px 16px 64px; }
+
+header { margin-bottom: 28px; }
+h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 15px; margin: 40px 0 12px; letter-spacing: -0.005em; }
+.sub { color: var(--muted); font-size: 13px; margin: 0; }
+.warn {
+  margin-top: 12px; padding: 10px 12px; border-radius: 6px;
+  background: var(--amber-bg); color: var(--amber);
+  font-size: 13px; border: 1px solid currentColor;
+}
+
+/* Timeline */
+.timeline {
+  position: relative; margin: 0 0 8px; padding: 26px 0 30px;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.track { position: relative; height: 2px; background: var(--line); margin: 0 4px; }
+.month {
+  position: absolute; top: -22px; font-size: 11px; color: var(--muted);
+  transform: translateX(-50%); white-space: nowrap;
+}
+.tick { position: absolute; top: -6px; width: 1px; height: 6px; background: var(--line); }
+.dot {
+  position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%;
+  transform: translate(-50%, -50%); border: 2px solid var(--bg); cursor: default;
+}
+.dot.green { background: var(--green); }
+.dot.amber { background: var(--amber); }
+.dot.red { background: var(--red); }
+.dot.grey { background: var(--grey); }
+.dot-label {
+  position: absolute; top: 14px; font-size: 11px; color: var(--muted);
+  transform: translateX(-50%); white-space: nowrap;
+}
+.beyond { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+
+/* Table */
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+td.domain { font-weight: 600; white-space: nowrap; }
+td.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.notes { color: var(--muted); font-size: 12.5px; min-width: 200px; max-width: 320px; }
+a { color: var(--accent); }
+a.quiet { color: var(--muted); text-decoration: none; font-size: 11px; margin-left: 6px; }
+a.quiet:hover { color: var(--accent); text-decoration: underline; }
+
+.pill {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 600; white-space: nowrap;
+}
+.pill.green { background: var(--green-bg); color: var(--green); }
+.pill.amber { background: var(--amber-bg); color: var(--amber); }
+.pill.red { background: var(--red-bg); color: var(--red); }
+.pill.grey { background: var(--grey-bg); color: var(--grey); }
+
+.tag { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+
+/* Change log */
+.controls { margin-bottom: 12px; }
+select {
+  font: inherit; font-size: 13px; padding: 5px 8px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--fg);
+}
+ul.log { list-style: none; margin: 0; padding: 0; }
+ul.log li { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.log .when { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.log .what { margin-top: 2px; }
+.log code { font-size: 12.5px; background: var(--panel); padding: 1px 5px; border-radius: 4px; word-break: break-word; }
+.empty { color: var(--muted); font-size: 13px; padding: 12px 0; }
+
+footer { margin-top: 48px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+
+@media (max-width: 900px) {
+  .hide-md { display: none; }
+  .dot-label { display: none; }
+}
+@media (max-width: 620px) {
+  .wrap { padding: 20px 14px 48px; }
+  h1 { font-size: 19px; }
+  .hide-sm { display: none; }
+  table { font-size: 13px; }
+  th, td { padding-right: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Fabrik domain monitor</h1>
+    <p class="sub" id="checked">Loading...</p>
+    <div id="stale"></div>
+  </header>
+
+  <main id="main" hidden>
+    <div class="timeline" id="timeline"></div>
+    <p class="beyond" id="beyond"></p>
+
+    <h2>Domains</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Domain</th>
+            <th class="hide-sm">Owner</th>
+            <th class="hide-sm">Watch</th>
+            <th class="hide-sm">Registrar</th>
+            <th>Expires</th>
+            <th class="hide-sm">Days left</th>
+            <th>Status</th>
+            <th class="hide-md">Notes</th>
+            <th class="hide-sm">Last changed</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <h2>Change log</h2>
+    <div class="controls">
+      <label for="filter" class="sub">Filter by domain </label>
+      <select id="filter"><option value="">All domains</option></select>
+    </div>
+    <ul class="log" id="log"></ul>
+  </main>
+
+  <p class="empty" id="error" hidden></p>
+
+  <footer>
+    Built from RDAP. Checked daily by GitHub Actions.
+    <a href="https://github.com/Fabrik-UAE/fabrik-domain-monitor">Repository</a>
+  </footer>
+</div>
+
+<script type="module">
+const RDAP_BASE = {
+  com: 'https://rdap.verisign.com/com/v1/domain/',
+  uk: 'https://rdap.nominet.uk/uk/domain/',
+};
+const DAY = 86400000;
+
+const el = (id) => document.getElementById(id);
+const text = (s) => document.createTextNode(s);
+
+function make(tag, className, content) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (content != null) node.textContent = content;
+  return node;
+}
+
+const todayUTC = () => {
+  const now = new Date();
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+};
+
+function daysUntil(iso) {
+  if (!iso) return null;
+  const target = Date.parse(iso + 'T00:00:00Z');
+  return Number.isNaN(target) ? null : Math.round((target - todayUTC()) / DAY);
+}
+
+function formatDate(iso) {
+  if (!iso) return 'unknown';
+  const d = new Date(iso + 'T00:00:00Z');
+  if (Number.isNaN(d.getTime())) return 'unknown';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+function formatStamp(iso) {
+  if (!iso) return 'never';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 'never';
+  return d.toLocaleString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
+  }) + ' UTC';
+}
+
+/* Green beyond 90 days, amber inside 90, red inside 30, grey once expired or errored. */
+function band(entry) {
+  if (entry.error || !entry.expires) return 'grey';
+  const days = daysUntil(entry.expires);
+  if (days === null || days < 0) return 'grey';
+  if (days <= 30) return 'red';
+  if (days <= 90) return 'amber';
+  return 'green';
+}
+
+function pillText(entry) {
+  if (entry.error) return 'Error';
+  if (!entry.expires) return 'Unknown';
+  const days = daysUntil(entry.expires);
+  if (days === null) return 'Unknown';
+  if (days < 0) return 'Expired';
+  if (days === 0) return 'Expires today';
+  if (days <= 90) return days + ' days left';
+  return 'Active';
+}
+
+function rdapUrl(domain) {
+  const tld = domain.split('.').pop();
+  const base = RDAP_BASE[tld];
+  return base ? base + domain : null;
+}
+
+const FIELD_LABEL = {
+  expires: 'Expiry',
+  registrar: 'Registrar',
+  nameservers: 'Nameservers',
+  status: 'Status',
+};
+
+function changeValue(field, value) {
+  if (value === null || value === undefined) return 'none';
+  if (Array.isArray(value)) return value.length ? value.join(', ') : 'none';
+  if (field === 'expires') return formatDate(value);
+  return String(value);
+}
+
+/* 12 months from today, with a dot per domain at its expiry date. */
+function renderTimeline(entries) {
+  const container = el('timeline');
+  container.replaceChildren();
+
+  const start = todayUTC();
+  const startDate = new Date(start);
+  const end = Date.UTC(startDate.getUTCFullYear() + 1, startDate.getUTCMonth(), startDate.getUTCDate());
+  const span = end - start;
+
+  const track = make('div', 'track');
+  const pct = (ms) => ((ms - start) / span) * 100;
+
+  for (let i = 0; i <= 12; i += 1) {
+    const monthStart = Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth() + i, 1);
+    if (monthStart < start || monthStart > end) continue;
+    const left = pct(monthStart) + '%';
+
+    const label = make('span', 'month', new Date(monthStart).toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' }));
+    label.style.left = left;
+    track.appendChild(label);
+
+    const tick = make('span', 'tick');
+    tick.style.left = left;
+    track.appendChild(tick);
+  }
+
+  const beyond = [];
+  const past = [];
+  for (const entry of entries) {
+    const days = daysUntil(entry.expires);
+    if (days === null || days < 0 || days > 365) {
+      if (entry.expires && days !== null && days < 0) {
+        past.push(entry.domain + ' ' + formatDate(entry.expires));
+      } else if (entry.expires) {
+        beyond.push(entry.domain + ' ' + formatDate(entry.expires));
+      }
+      continue;
+    }
+    const at = start + days * DAY;
+    const left = pct(at) + '%';
+
+    const dot = make('span', 'dot ' + band(entry));
+    dot.style.left = left;
+    dot.title = entry.domain + ' expires ' + formatDate(entry.expires) + ', ' + days + ' days';
+    track.appendChild(dot);
+
+    const label = make('span', 'dot-label', entry.domain);
+    label.style.left = left;
+    track.appendChild(label);
+  }
+
+  container.appendChild(track);
+  const notes = [];
+  if (past.length) notes.push('Already expired: ' + past.join(', ') + '.');
+  if (beyond.length) notes.push('Beyond 12 months: ' + beyond.join(', ') + '.');
+  el('beyond').textContent = notes.join(' ');
+}
+
+function renderTable(entries, config) {
+  const tbody = el('rows');
+  tbody.replaceChildren();
+
+  for (const entry of entries) {
+    const meta = config[entry.domain] ?? {};
+    const tr = document.createElement('tr');
+
+    const nameCell = make('td', 'domain');
+    const url = rdapUrl(entry.domain);
+    if (url) {
+      const a = make('a', null, entry.domain);
+      a.href = url;
+      a.rel = 'noopener';
+      nameCell.appendChild(a);
+    } else {
+      nameCell.appendChild(text(entry.domain));
+    }
+    const whois = make('a', 'quiet', 'whois');
+    whois.href = 'https://who.is/whois/' + entry.domain;
+    whois.rel = 'noopener';
+    nameCell.appendChild(whois);
+    tr.appendChild(nameCell);
+
+    tr.appendChild(make('td', 'tag hide-sm', meta.owner ?? 'unknown'));
+    tr.appendChild(make('td', 'tag hide-sm', meta.watch ?? 'unknown'));
+    tr.appendChild(make('td', 'hide-sm', entry.registrar ?? 'unknown'));
+    tr.appendChild(make('td', 'num', formatDate(entry.expires)));
+
+    const days = daysUntil(entry.expires);
+    tr.appendChild(make('td', 'num hide-sm', days === null ? 'unknown' : String(days)));
+
+    const statusCell = document.createElement('td');
+    statusCell.appendChild(make('span', 'pill ' + band(entry), pillText(entry)));
+    tr.appendChild(statusCell);
+
+    tr.appendChild(make('td', 'notes hide-md', meta.notes ?? ''));
+    tr.appendChild(make('td', 'num hide-sm', entry.lastChanged ? formatDate(entry.lastChanged.slice(0, 10)) : 'never'));
+
+    tbody.appendChild(tr);
+  }
+}
+
+function renderLog(history, filterDomain) {
+  const list = el('log');
+  list.replaceChildren();
+
+  const entries = history
+    .filter((h) => !filterDomain || h.domain === filterDomain)
+    .slice()
+    .reverse();
+
+  if (!entries.length) {
+    const li = make('li', 'empty', history.length
+      ? 'No changes recorded for this domain.'
+      : 'No changes recorded yet. The first run only takes a baseline.');
+    list.appendChild(li);
+    return;
+  }
+
+  for (const entry of entries) {
+    const li = document.createElement('li');
+    li.appendChild(make('div', 'when', formatStamp(entry.at) + ' · ' + entry.domain));
+
+    for (const change of entry.changes ?? []) {
+      const line = make('div', 'what');
+      line.appendChild(text((FIELD_LABEL[change.field] ?? change.field) + ': '));
+      line.appendChild(make('code', null, changeValue(change.field, change.from)));
+      line.appendChild(text(' → '));
+      line.appendChild(make('code', null, changeValue(change.field, change.to)));
+      li.appendChild(line);
+    }
+    list.appendChild(li);
+  }
+}
+
+async function loadJson(path, fallback) {
+  const res = await fetch(path, { cache: 'no-store' });
+  if (!res.ok) {
+    if (fallback !== undefined) return fallback;
+    throw new Error(path + ' returned HTTP ' + res.status);
+  }
+  return res.json();
+}
+
+async function init() {
+  let latest, history, domainsConfig;
+  try {
+    [latest, history, domainsConfig] = await Promise.all([
+      loadJson('../data/latest.json'),
+      loadJson('../data/history.json', []),
+      loadJson('../domains.json', []),
+    ]);
+  } catch (err) {
+    el('checked').textContent = 'Could not load the data.';
+    const error = el('error');
+    error.textContent = err.message + '. Serve the repository root, not the site folder on its own.';
+    error.hidden = false;
+    return;
+  }
+
+  const config = Object.fromEntries((domainsConfig ?? []).map((d) => [d.domain.toLowerCase(), d]));
+  const entries = Object.values(latest.domains ?? {}).sort((a, b) => {
+    // Sorted by expiry ascending, with unknown dates last.
+    if (!a.expires) return 1;
+    if (!b.expires) return -1;
+    return a.expires.localeCompare(b.expires);
+  });
+
+  el('checked').textContent =
+    'Last checked ' + formatStamp(latest.checkedAt) + ' · ' + entries.length +
+    (entries.length === 1 ? ' domain' : ' domains');
+
+  const ageHours = (Date.now() - Date.parse(latest.checkedAt)) / 3600000;
+  if (Number.isFinite(ageHours) && ageHours > 48) {
+    const warn = make('div', 'warn',
+      'This data is ' + Math.floor(ageHours / 24) + ' days old. The daily workflow may have stopped.');
+    el('stale').replaceChildren(warn);
+  }
+
+  renderTimeline(entries);
+  renderTable(entries, config);
+
+  const filter = el('filter');
+  for (const entry of entries) {
+    const option = document.createElement('option');
+    option.value = entry.domain;
+    option.textContent = entry.domain;
+    filter.appendChild(option);
+  }
+  filter.addEventListener('change', () => renderLog(history, filter.value));
+  renderLog(history, '');
+
+  el('main').hidden = false;
+}
+
+init();
+</script>
+</body>
+</html>
