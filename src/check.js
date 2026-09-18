@@ -72,7 +72,12 @@ async function testAlert(dashboardUrl) {
         label: meta.watch === 'acquisition' ? 'Holder renewed' : 'Renewed',
         priority: 'normal',
         watch: meta.watch,
-        detail: { from: soonest.expires, to: nextYear, registrar: soonest.registrar },
+        detail: {
+          from: soonest.expires,
+          to: nextYear,
+          registrar: soonest.registrar,
+          updatedAt: soonest.updated,
+        },
       },
       {
         domain: soonest.domain,
@@ -83,7 +88,7 @@ async function testAlert(dashboardUrl) {
         detail: { threshold: 90, expires: soonest.expires, owner: meta.owner },
       },
     ],
-    { dashboardUrl, test: true },
+    { dashboardUrl, test: true, checkedAt: latest?.checkedAt ?? new Date().toISOString() },
   );
 
   console.log('Sending a test message. Nothing is written and no real change occurred.\n');
@@ -112,7 +117,7 @@ async function main() {
   const results = await lookupAll(domainList);
 
   const { latest, historyEntries, alerts } = buildRun({ domainList, previousLatest, results });
-  const message = formatMessage(alerts, { dashboardUrl });
+  const message = formatMessage(alerts, { dashboardUrl, checkedAt: latest.checkedAt });
 
   console.log(
     `\n${historyEntries.length} ${historyEntries.length === 1 ? 'domain' : 'domains'} changed, ` +

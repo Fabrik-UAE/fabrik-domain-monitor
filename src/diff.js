@@ -111,8 +111,11 @@ export function lockDelta(before = [], after = []) {
 export function alertsForDomain({ meta, previous, current, changes, now = new Date() }) {
   const alerts = [];
   const watch = meta?.watch ?? 'renewal';
+  // The registry's own "last changed" date, which is when the registrar acted.
+  // We report it alongside the run date so a change is never undated.
+  const updatedAt = current?.updated ?? null;
   const push = (kind, label, detail, priority = 'normal') =>
-    alerts.push({ domain: meta.domain, kind, label, detail, priority, watch });
+    alerts.push({ domain: meta.domain, kind, label, detail: { updatedAt, ...detail }, priority, watch });
 
   const changeFor = (field) => changes.find((c) => c.field === field);
 
@@ -149,7 +152,7 @@ export function alertsForDomain({ meta, previous, current, changes, now = new Da
   const dropping = (current?.status ?? []).filter(isDropping);
   const wasDropping = (previous?.status ?? []).filter(isDropping);
   if (dropping.length && !sameArray(dropping, wasDropping)) {
-    push('dropping', 'Dropping', { status: dropping }, 'high');
+    push('dropping', 'Dropping', { status: dropping, expires: current?.expires ?? null }, 'high');
   }
 
   return alerts;

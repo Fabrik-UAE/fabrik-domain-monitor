@@ -38,28 +38,58 @@ const WATCH_WORDS = {
   client: 'Client domain',
 };
 
+/** "18 Sept 2026 at 13:21 UTC" for a full timestamp. */
+export function formatStamp(iso) {
+  if (!iso) return 'unknown';
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return 'unknown';
+  const date = parsed.toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+  });
+  const time = parsed.toLocaleTimeString('en-GB', {
+    hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
+  });
+  return `${date} at ${time} UTC`;
+}
+
+/** " on 20 Dec 2025", or empty when the registry gave us no date. */
+function onDate(iso) {
+  return iso ? ` on ${formatDate(iso)}` : '';
+}
+
+/** "460 days out", or "today", or "42 days ago" once the date has passed. */
+function howFarOff(iso, now = new Date()) {
+  const days = daysUntil(iso, now);
+  if (days === null) return null;
+  if (days === 0) return 'today';
+  if (days < 0) return `${Math.abs(days)} days ago`;
+  return `${days} days out`;
+}
+
 /** Turns one alert into the text after the bullet. */
-export function formatAlert(alert) {
+export function formatAlert(alert, now = new Date()) {
   const { domain, kind, label, detail = {}, watch } = alert;
 
   switch (kind) {
     case 'expires': {
       const registrar = shortRegistrar(detail.registrar);
-      const suffix = registrar ? ` (${registrar})` : '';
-      return `${domain}: ${label}. Expires ${formatDate(detail.from)} → ${formatDate(detail.to)}${suffix}`;
+      const suffix = registrar ? ` Registrar ${registrar}.` : '';
+      const off = howFarOff(detail.to, now);
+      const gap = off ? `, now ${off}` : '';
+      return `${domain}: ${label}${onDate(detail.updatedAt)}. Expiry ${formatDate(detail.from)} → ${formatDate(detail.to)}${gap}.${suffix}`;
     }
     case 'registrar':
-      return `${domain}: ${label}. ${shortRegistrar(detail.from) ?? 'unknown'} → ${shortRegistrar(detail.to) ?? 'unknown'}`;
+      return `${domain}: ${label}${onDate(detail.updatedAt)}. ${shortRegistrar(detail.from) ?? 'unknown'} → ${shortRegistrar(detail.to) ?? 'unknown'}`;
     case 'nameservers': {
       const from = (detail.from ?? []).join(', ') || 'none';
       const to = (detail.to ?? []).join(', ') || 'none';
-      return `${domain}: ${label}. ${from} → ${to}`;
+      return `${domain}: ${label}${onDate(detail.updatedAt)}. ${from} → ${to}`;
     }
     case 'lock': {
       const parts = [];
-      if (detail.lost?.length) parts.push(`lost ${detail.lost.join(', ')}`);
-      if (detail.gained?.length) parts.push(`gained ${detail.gained.join(', ')}`);
-      let line = `${domain}: ${label}. ${parts.join('; ')}`;
+      if (detail.lost?.length) parts.push(`Lost ${detail.lost.join(', ')}`);
+      if (detail.gained?.length) parts.push(`${detail.lost?.length ? 'gained' : 'Gained'} ${detail.gained.join(', ')}`);
+      let line = `${domain}: ${label}${onDate(detail.updatedAt)}. ${parts.join('; ')}`;
       // A transfer lock coming off a domain we want is the strongest signal we get.
       const lostTransferLock = (detail.lost ?? []).some((s) =>
         String(s).toLowerCase().replace(/[^a-z]/g, '').includes('transferprohibited'),
@@ -69,12 +99,16 @@ export function formatAlert(alert) {
       }
       return line;
     }
-    case 'dropping':
-      return `${domain}: ${label}. Status ${(detail.status ?? []).join(', ')}. High priority`;
+    case 'dropping': {
+      const off = howFarOff(detail.expires, now);
+      const expiry = detail.expires ? ` Expires ${formatDate(detail.expires)}${off ? ', ' + off : ''}.` : '';
+      const since = detail.updatedAt ? ` since ${formatDate(detail.updatedAt)}` : '';
+      return `${domain}: ${label}. Status ${(detail.status ?? []).join(', ')}${since}.${expiry} High priority.`;
+    }
     case 'threshold': {
       const owner = OWNER_WORDS[detail.owner] ?? detail.owner ?? 'unknown owner';
       const watchWord = WATCH_WORDS[watch] ?? 'Watched';
-      return `${domain}: ${label}, ${formatDate(detail.expires)}. ${watchWord}, ${owner}.`;
+      return `${domain}: ${label} on ${formatDate(detail.expires)}. ${watchWord}, ${owner}.`;
     }
     case 'error':
       return `${domain}: ${label} for ${detail.runs} runs. ${detail.message ?? 'no detail'}`;
@@ -87,7 +121,7 @@ export function formatAlert(alert) {
  * Builds the single message for a run. High priority alerts lead.
  * Returns null when there is nothing to say.
  */
-export function formatMessage(alerts, { dashboardUrl = DEFAULT_DASHBOARD_URL, test = false } = {}) {
+export function formatMessage(alerts, { dashboardUrl = DEFAULT_DASHBOARD_URL, test = false, checkedAt = null, now = new Date() } = {}) {
   if (!alerts?.length) return null;
 
   const ordered = [...alerts].sort((a, b) => {
@@ -101,9 +135,14 @@ export function formatMessage(alerts, { dashboardUrl = DEFAULT_DASHBOARD_URL, te
     : `*Domain monitor: ${ordered.length} ${noun}*`;
   const lines = [
     heading,
-    ...ordered.map((alert) => `• ${formatAlert(alert)}`),
+    ...ordered.map((alert) => `• ${formatAlert(alert, now)}`),
   ];
-  if (dashboardUrl) lines.push(`Dashboard: ${dashboardUrl}`);
+  // Anchor every message to the moment it was checked, so a late or replayed
+  // message is never mistaken for a fresh one.
+  const footer = [];
+  if (checkedAt) footer.push(`Checked ${formatStamp(checkedAt)}.`);
+  if (dashboardUrl) footer.push(`Dashboard: ${dashboardUrl}`);
+  if (footer.length) lines.push(footer.join(' '));
   return lines.join('\n');
 }
 
