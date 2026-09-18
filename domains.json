@@ -3,24 +3,24 @@
     "domain": "fabrik.co.uk",
     "owner": "third-party",
     "watch": "acquisition",
-    "notes": "Held by a third party. Nameservers on registrar-servers.com."
+    "notes": "Held by Amazing Domains. Parked on registrar-servers.com freedns. Expires Dec 2026, so the renewal window is the moment to approach."
   },
   {
     "domain": "fabrikagency.co.uk",
     "owner": "third-party",
     "watch": "acquisition",
-    "notes": "Held by a third party. Closest match to the trading name."
+    "notes": "Held at 123-Reg since 2010, nameservers on domaincontrol.com. Closest match to the trading name."
   },
   {
     "domain": "fabrikagency.com",
     "owner": "third-party",
     "watch": "acquisition",
-    "notes": "Held by a third party. Primary .com acquisition target."
+    "notes": "Parked at DomainMarket and openly for sale, see the nameserver. GoDaddy, fully locked. Best acquisition prospect of the four."
   },
   {
     "domain": "fabrik.com",
     "owner": "third-party",
     "watch": "acquisition",
-    "notes": "Held by a third party. Premium single word, long shot."
+    "notes": "Registered 1994, on Network Solutions with AWS nameservers, so it is in active use. Expires 2029. Long shot."
   }
 ]

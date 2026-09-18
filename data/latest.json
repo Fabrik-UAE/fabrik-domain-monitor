@@ -1,0 +1,89 @@
+{
+  "checkedAt": "2026-09-18T12:59:37Z",
+  "domains": {
+    "fabrik.co.uk": {
+      "domain": "fabrik.co.uk",
+      "registrar": "Behrendt Professional Corporation t/a Amazing Domains",
+      "created": "2015-12-21",
+      "updated": "2025-12-20",
+      "expires": "2026-12-21",
+      "nameservers": [
+        "freedns1.registrar-servers.com",
+        "freedns2.registrar-servers.com",
+        "freedns3.registrar-servers.com",
+        "freedns4.registrar-servers.com",
+        "freedns5.registrar-servers.com"
+      ],
+      "status": [
+        "active"
+      ],
+      "lastChecked": "2026-09-18T12:59:37Z",
+      "lastChanged": "2026-09-18T12:59:37Z",
+      "alertedThresholds": [],
+      "error": null,
+      "consecutiveErrors": 0
+    },
+    "fabrikagency.co.uk": {
+      "domain": "fabrikagency.co.uk",
+      "registrar": "123-Reg Limited t/a 123-reg",
+      "created": "2010-03-03",
+      "updated": "2026-03-04",
+      "expires": "2027-03-03",
+      "nameservers": [
+        "ns51.domaincontrol.com",
+        "ns52.domaincontrol.com"
+      ],
+      "status": [
+        "active"
+      ],
+      "lastChecked": "2026-09-18T12:59:37Z",
+      "lastChanged": "2026-09-18T12:59:37Z",
+      "alertedThresholds": [],
+      "error": null,
+      "consecutiveErrors": 0
+    },
+    "fabrikagency.com": {
+      "domain": "fabrikagency.com",
+      "registrar": "GoDaddy.com, LLC",
+      "created": "2008-04-14",
+      "updated": "2026-04-15",
+      "expires": "2027-04-14",
+      "nameservers": [
+        "ns1.domain-is-4-sale-at-domainmarket.com",
+        "ns2.domainmarket.com"
+      ],
+      "status": [
+        "client delete prohibited",
+        "client renew prohibited",
+        "client transfer prohibited",
+        "client update prohibited"
+      ],
+      "lastChecked": "2026-09-18T12:59:37Z",
+      "lastChanged": "2026-09-18T12:59:37Z",
+      "alertedThresholds": [],
+      "error": null,
+      "consecutiveErrors": 0
+    },
+    "fabrik.com": {
+      "domain": "fabrik.com",
+      "registrar": "Domain.com - Network Solutions, LLC",
+      "created": "1994-05-25",
+      "updated": "2026-09-14",
+      "expires": "2029-05-24",
+      "nameservers": [
+        "ns-1187.awsdns-20.org",
+        "ns-1613.awsdns-09.co.uk",
+        "ns-6.awsdns-00.com",
+        "ns-975.awsdns-57.net"
+      ],
+      "status": [
+        "client transfer prohibited"
+      ],
+      "lastChecked": "2026-09-18T12:59:37Z",
+      "lastChanged": "2026-09-18T12:59:37Z",
+      "alertedThresholds": [],
+      "error": null,
+      "consecutiveErrors": 0
+    }
+  }
+}
