@@ -1,0 +1,26 @@
+[
+  {
+    "domain": "fabrik.co.uk",
+    "owner": "third-party",
+    "watch": "acquisition",
+    "notes": "Held by a third party. Nameservers on registrar-servers.com."
+  },
+  {
+    "domain": "fabrikagency.co.uk",
+    "owner": "third-party",
+    "watch": "acquisition",
+    "notes": "Held by a third party. Closest match to the trading name."
+  },
+  {
+    "domain": "fabrikagency.com",
+    "owner": "third-party",
+    "watch": "acquisition",
+    "notes": "Held by a third party. Primary .com acquisition target."
+  },
+  {
+    "domain": "fabrik.com",
+    "owner": "third-party",
+    "watch": "acquisition",
+    "notes": "Held by a third party. Premium single word, long shot."
+  }
+]

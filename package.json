@@ -1,0 +1,15 @@
+{
+  "name": "fabrik-domain-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Watches Fabrik's domain list, records RDAP data daily and alerts Slack on changes.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node src/check.js",
+    "dry-run": "node src/check.js --dry-run",
+    "test": "node --test"
+  }
+}
