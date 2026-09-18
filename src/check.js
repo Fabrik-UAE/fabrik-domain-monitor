@@ -125,6 +125,19 @@ async function main() {
     return;
   }
 
+  // Let the workflow describe the commit accurately. Every run rewrites the
+  // checkedAt timestamp, so a diff in data/ does not by itself mean a change.
+  if (process.env.GITHUB_OUTPUT) {
+    const summary = historyEntries.length
+      ? `${historyEntries.length} ${historyEntries.length === 1 ? 'domain' : 'domains'} changed`
+      : 'no change';
+    await writeFile(
+      process.env.GITHUB_OUTPUT,
+      `changed=${historyEntries.length}\nsummary=${summary}\n`,
+      { flag: 'a' },
+    );
+  }
+
   await mkdir(join(root, 'data'), { recursive: true });
   await writeJson(paths.latest, latest);
   await writeJson(paths.history, [...previousHistory, ...historyEntries]);

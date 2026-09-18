@@ -15,9 +15,13 @@ through the IANA bootstrap file.
 A GitHub Actions workflow runs `src/check.js` at 06:00 UTC daily, which is 10:00
 in Dubai. The checker looks every domain up, writes the current snapshot to
 `data/latest.json` and appends any changes to `data/history.json`. If the data
-changed, the workflow commits it and the checker posts one Slack message
-summarising the run. If nothing changed, nothing is committed and nothing is
-sent.
+changed, the checker posts one Slack message summarising the run. If nothing
+changed, no message is sent.
+
+The workflow commits `data/` on every run, because each run rewrites the
+`checkedAt` timestamp and the dashboard reads that timestamp to tell you the
+monitor is still alive. So expect one small commit a day. The commit message
+says which it was: "no change" or "2 domains changed".
 
 The dashboard is a single static page that reads those two JSON files plus
 `domains.json`. GitHub Pages serves the repository root from `main`, so the
