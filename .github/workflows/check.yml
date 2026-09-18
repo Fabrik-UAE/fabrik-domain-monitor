@@ -5,6 +5,11 @@ on:
     # 06:00 UTC, which is 10:00 in Dubai.
     - cron: '0 6 * * *'
   workflow_dispatch:
+    inputs:
+      test_alert:
+        description: 'Send one sample Slack message instead of running a check'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -23,13 +28,22 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Send a test Slack message
+        if: ${{ inputs.test_alert }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DASHBOARD_URL: https://fabrik-uae.github.io/fabrik-domain-monitor/site/
+        run: node src/check.js --test-alert
+
       - name: Run the check
+        if: ${{ !inputs.test_alert }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DASHBOARD_URL: https://fabrik-uae.github.io/fabrik-domain-monitor/site/
         run: node src/check.js
 
       - name: Commit the data if anything changed
+        if: ${{ !inputs.test_alert }}
         run: |
           if [ -z "$(git status --porcelain data/)" ]; then
             echo "No change in data/, nothing to commit."

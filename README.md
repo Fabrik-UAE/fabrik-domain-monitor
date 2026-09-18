@@ -69,8 +69,9 @@ Node 20 or newer. There are no dependencies to install.
 
 ```bash
 node src/check.js            # runs a check, writes data/, prints or sends the Slack message
-node src/check.js --dry-run  # fetches and diffs but writes nothing
-node --test                  # runs the unit tests
+node src/check.js --dry-run     # fetches and diffs but writes nothing
+node src/check.js --test-alert  # sends one sample Slack message, writes nothing
+node --test                     # runs the unit tests
 ```
 
 With `SLACK_WEBHOOK_URL` unset the message is printed to stdout and the run
@@ -90,6 +91,10 @@ Then open http://localhost:8000/site/.
 1. Create an incoming webhook in Slack and copy the URL.
 2. In this repository, go to Settings, then Secrets and variables, then Actions.
 3. Add a repository secret named `SLACK_WEBHOOK_URL` with that URL.
+
+To check it works, run the Domain check workflow by hand with the "Send a test
+Slack message" box ticked, or run `node src/check.js --test-alert` locally. Both
+send one clearly labelled sample message and write nothing.
 
 Never commit the webhook. `.env` is gitignored and the checker reads the URL
 from the environment.

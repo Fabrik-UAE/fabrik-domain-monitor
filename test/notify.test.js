@@ -139,3 +139,11 @@ test('a webhook failure throws', async () => {
     /HTTP 403/,
   );
 });
+
+test('a test message is labelled so nobody mistakes it for a real change', () => {
+  const message = formatMessage(
+    [{ domain: 'a.com', kind: 'registrar', label: 'Transferred', detail: {} }],
+    { test: true },
+  );
+  assert.match(message, /^\*Domain monitor: test message, no real change\*/);
+});

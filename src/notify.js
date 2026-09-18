@@ -87,7 +87,7 @@ export function formatAlert(alert) {
  * Builds the single message for a run. High priority alerts lead.
  * Returns null when there is nothing to say.
  */
-export function formatMessage(alerts, { dashboardUrl = DEFAULT_DASHBOARD_URL } = {}) {
+export function formatMessage(alerts, { dashboardUrl = DEFAULT_DASHBOARD_URL, test = false } = {}) {
   if (!alerts?.length) return null;
 
   const ordered = [...alerts].sort((a, b) => {
@@ -96,8 +96,11 @@ export function formatMessage(alerts, { dashboardUrl = DEFAULT_DASHBOARD_URL } =
   });
 
   const noun = ordered.length === 1 ? 'change' : 'changes';
+  const heading = test
+    ? '*Domain monitor: test message, no real change*'
+    : `*Domain monitor: ${ordered.length} ${noun}*`;
   const lines = [
-    `*Domain monitor: ${ordered.length} ${noun}*`,
+    heading,
     ...ordered.map((alert) => `• ${formatAlert(alert)}`),
   ];
   if (dashboardUrl) lines.push(`Dashboard: ${dashboardUrl}`);

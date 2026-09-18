@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Runs one check across every domain in domains.json.
 //
-//   node src/check.js            writes data/, sends or prints the Slack message
-//   node src/check.js --dry-run  fetches and diffs but writes nothing
+//   node src/check.js              writes data/, sends or prints the Slack message
+//   node src/check.js --dry-run    fetches and diffs but writes nothing
+//   node src/check.js --test-alert sends one sample message, writes nothing
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -46,9 +47,58 @@ async function lookupAll(domainList) {
   return results;
 }
 
+/**
+ * Builds a sample message off the real snapshot so the webhook can be checked
+ * without waiting for a domain to actually change. Writes nothing.
+ */
+async function testAlert(dashboardUrl) {
+  const latest = await readJson(paths.latest, null);
+  const domainList = await readJson(paths.domains, []);
+  const config = Object.fromEntries(domainList.map((d) => [d.domain.toLowerCase(), d]));
+
+  const soonest = Object.values(latest?.domains ?? {})
+    .filter((d) => d.expires)
+    .sort((a, b) => a.expires.localeCompare(b.expires))[0];
+
+  if (!soonest) throw new Error('No data yet, so run a real check first');
+  const meta = config[soonest.domain] ?? {};
+  const nextYear = `${Number(soonest.expires.slice(0, 4)) + 1}${soonest.expires.slice(4)}`;
+
+  const message = formatMessage(
+    [
+      {
+        domain: soonest.domain,
+        kind: 'expires',
+        label: meta.watch === 'acquisition' ? 'Holder renewed' : 'Renewed',
+        priority: 'normal',
+        watch: meta.watch,
+        detail: { from: soonest.expires, to: nextYear, registrar: soonest.registrar },
+      },
+      {
+        domain: soonest.domain,
+        kind: 'threshold',
+        label: '90 days to expiry',
+        priority: 'normal',
+        watch: meta.watch,
+        detail: { threshold: 90, expires: soonest.expires, owner: meta.owner },
+      },
+    ],
+    { dashboardUrl, test: true },
+  );
+
+  console.log('Sending a test message. Nothing is written and no real change occurred.\n');
+  const { sent } = await sendSlack(message, { webhookUrl: process.env.SLACK_WEBHOOK_URL });
+  console.log(sent ? '\nTest message sent to Slack.' : '\nSet SLACK_WEBHOOK_URL to deliver it to Slack.');
+}
+
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
   const dashboardUrl = process.env.DASHBOARD_URL || DEFAULT_DASHBOARD_URL;
+
+  if (process.argv.includes('--test-alert')) {
+    await testAlert(dashboardUrl);
+    return;
+  }
 
   const domainList = await readJson(paths.domains, null);
   if (!Array.isArray(domainList) || domainList.length === 0) {
