@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { fetchDomain } from './rdap.js';
 import { buildRun } from './diff.js';
-import { formatMessage, sendSlack, DEFAULT_DASHBOARD_URL } from './notify.js';
+import { formatMessage, sendSlack, defaultDashboardUrl } from './notify.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const paths = {
@@ -98,7 +98,7 @@ async function testAlert(dashboardUrl) {
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
-  const dashboardUrl = process.env.DASHBOARD_URL || DEFAULT_DASHBOARD_URL;
+  const dashboardUrl = defaultDashboardUrl();
 
   if (process.argv.includes('--test-alert')) {
     await testAlert(dashboardUrl);

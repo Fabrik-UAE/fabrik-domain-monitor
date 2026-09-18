@@ -181,7 +181,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 12px; border-top: 1px
 
   <footer>
     Built from RDAP. Checked daily by GitHub Actions.
-    <a href="https://github.com/Fabrik-UAE/fabrik-domain-monitor">Repository</a>
+    <a id="repo-link" href="#" hidden>Repository</a>
   </footer>
 </div>
 
@@ -415,7 +415,19 @@ async function loadJson(path, fallback) {
   return res.json();
 }
 
+/* Point the footer at whichever repository is serving this page, so a fork
+   needs no editing. owner.github.io/name maps to github.com/owner/name. */
+function linkRepository() {
+  const host = location.hostname.match(/^([^.]+)\.github\.io$/);
+  const name = location.pathname.split('/').filter(Boolean)[0];
+  if (!host || !name) return;
+  const link = el('repo-link');
+  link.href = 'https://github.com/' + host[1] + '/' + name;
+  link.hidden = false;
+}
+
 async function init() {
+  linkRepository();
   let latest, history, domainsConfig;
   try {
     [latest, history, domainsConfig] = await Promise.all([

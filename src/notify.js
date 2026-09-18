@@ -2,7 +2,19 @@
 
 import { daysUntil } from './diff.js';
 
-const DEFAULT_DASHBOARD_URL = 'https://fabrik-uae.github.io/fabrik-domain-monitor/site/';
+/**
+ * Where the dashboard lives. Derived from the repository so a fork needs no
+ * editing: GitHub Actions sets GITHUB_REPOSITORY to "owner/name", and Pages
+ * serves that at owner.github.io/name. DASHBOARD_URL overrides it for a custom
+ * domain. With neither, the message simply omits the link.
+ */
+export function defaultDashboardUrl(env = process.env) {
+  if (env.DASHBOARD_URL) return env.DASHBOARD_URL;
+  const repo = env.GITHUB_REPOSITORY;
+  if (!repo || !repo.includes('/')) return null;
+  const [owner, name] = repo.split('/');
+  return `https://${owner.toLowerCase()}.github.io/${name}/site/`;
+}
 
 /** "2026-12-21" becomes "21 Dec 2026". */
 export function formatDate(isoDate) {
@@ -121,7 +133,7 @@ export function formatAlert(alert, now = new Date()) {
  * Builds the single message for a run. High priority alerts lead.
  * Returns null when there is nothing to say.
  */
-export function formatMessage(alerts, { dashboardUrl = DEFAULT_DASHBOARD_URL, test = false, checkedAt = null, now = new Date() } = {}) {
+export function formatMessage(alerts, { dashboardUrl = defaultDashboardUrl(), test = false, checkedAt = null, now = new Date() } = {}) {
   if (!alerts?.length) return null;
 
   const ordered = [...alerts].sort((a, b) => {
@@ -172,4 +184,4 @@ export async function sendSlack(message, { webhookUrl = process.env.SLACK_WEBHOO
   return { sent: true };
 }
 
-export { DEFAULT_DASHBOARD_URL, daysUntil };
+export { daysUntil };

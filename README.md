@@ -6,6 +6,9 @@ publishes a dashboard.
 
 **Dashboard: https://fabrik-uae.github.io/fabrik-domain-monitor/site/**
 
+**Want one of your own?** [SETUP.md](SETUP.md) walks through it end to end,
+from a blank GitHub account to a working tracker with Slack alerts.
+
 Data comes from RDAP, so there are no API keys and no WHOIS scraping. Verisign
 serves `.com`, Nominet serves `.uk` and `.co.uk`, and anything else is routed
 through the IANA bootstrap file.

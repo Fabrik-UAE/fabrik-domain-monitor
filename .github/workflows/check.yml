@@ -32,7 +32,6 @@ jobs:
         if: ${{ inputs.test_alert }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          DASHBOARD_URL: https://fabrik-uae.github.io/fabrik-domain-monitor/site/
         run: node src/check.js --test-alert
 
       - name: Run the check
@@ -40,7 +39,6 @@ jobs:
         if: ${{ !inputs.test_alert }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          DASHBOARD_URL: https://fabrik-uae.github.io/fabrik-domain-monitor/site/
         run: node src/check.js
 
       - name: Commit the data if anything changed
