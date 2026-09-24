@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-23T10:21:33Z",
+  "checkedAt": "2026-09-24T10:36:44Z",
   "domains": {
     "fabrik.co.uk": {
       "domain": "fabrik.co.uk",
@@ -17,7 +17,7 @@
       "status": [
         "active"
       ],
-      "lastChecked": "2026-09-23T10:21:33Z",
+      "lastChecked": "2026-09-24T10:36:44Z",
       "lastChanged": "2026-09-18T12:59:37Z",
       "alertedThresholds": [
         90
@@ -38,7 +38,7 @@
       "status": [
         "active"
       ],
-      "lastChecked": "2026-09-23T10:21:33Z",
+      "lastChecked": "2026-09-24T10:36:44Z",
       "lastChanged": "2026-09-18T12:59:37Z",
       "alertedThresholds": [],
       "error": null,
@@ -60,7 +60,7 @@
         "client transfer prohibited",
         "client update prohibited"
       ],
-      "lastChecked": "2026-09-23T10:21:33Z",
+      "lastChecked": "2026-09-24T10:36:44Z",
       "lastChanged": "2026-09-18T12:59:37Z",
       "alertedThresholds": [],
       "error": null,
@@ -81,7 +81,7 @@
       "status": [
         "client transfer prohibited"
       ],
-      "lastChecked": "2026-09-23T10:21:33Z",
+      "lastChecked": "2026-09-24T10:36:44Z",
       "lastChanged": "2026-09-18T12:59:37Z",
       "alertedThresholds": [],
       "error": null,
